@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<title>微信读书 · 中键翻页 — 判定逻辑测试台</title>
+<style>
+  body { font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif; background:#f5f5f2; margin:0; padding:24px; }
+  h1 { font-size:18px; margin:0 0 4px; }
+  .sub { color:#888; font-size:12px; margin-bottom:20px; }
+  .row { display:flex; gap:16px; flex-wrap:wrap; }
+  .col { background:#fff; border:1px solid #ddd; border-radius:6px; padding:14px; min-width:230px; }
+  .col h2 { font-size:13px; margin:0 0 10px; color:#444; }
+  .box { padding:18px 12px; border:1px dashed #bbb; border-radius:4px; margin:6px 0; text-align:center; font-size:13px; background:#fafafa; }
+  #readerContent { background:#fff; border:2px solid #4a7; border-radius:8px; padding:0; min-height:220px; position:relative; }
+  #readerChapterContent { padding:16px; line-height:1.9; font-size:14px; }
+  .ui { background:#ffe9e9; border-color:#d99; }
+  .ok { background:#e9f7ec; border-color:#4a7; }
+  #log { background:#1e1e1e; color:#0f0; font:12px/1.6 Consolas,monospace; padding:12px; border-radius:6px; height:190px; overflow:auto; white-space:pre-wrap; }
+  .pager { position:absolute; top:50%; transform:translateY(-50%); width:34px; height:56px; border:1px solid #bbb; background:#fff; cursor:pointer; font-size:18px; border-radius:4px; }
+  #pagerRight { right:10px; } #pagerLeft { left:10px; }
+  input, textarea { width:100%; box-sizing:border-box; padding:6px; margin:4px 0; font-size:13px; }
+  a { color:#06c; }
+</style>
+</head>
+<body>
+<h1>微信读书 · 中键翻页 — 判定逻辑测试台</h1>
+<div class="sub">模拟微信读书网页版 DOM 结构，验证 content.js 的区域判定与翻页行为。</div>
+
+<div class="row">
+  <div class="col">
+    <h2>阅读区（正文）</h2>
+    <div id="readerContent" class="readerContent">
+      <div id="readerChapterContent" class="readerChapterContent">
+        <p>这里是正文第一段。点击这里的空白处应当翻页。</p>
+        <p>这里有一个<a href="https://example.com" id="aLink">正文内链接</a>，中键点它应当<b>不翻页</b>。</p>
+        <div class="box ok" id="canvasBox">
+          <canvas id="cnv" width="300" height="60"></canvas>
+          <div>Canvas 渲染区（模拟 .wr_canvasContainer）</div>
+        </div>
+        <input id="inp" placeholder="划线/想法输入框" />
+        <textarea id="ta" placeholder="多行输入"></textarea>
+        <div contenteditable="true" id="ce" class="box">可编辑区域 contenteditable</div>
+      </div>
+      <button class="pager renderTarget_pager_button" id="pagerLeft">‹</button>
+      <button class="pager renderTarget_pager_button renderTarget_pager_button_right" id="pagerRight">›</button>
+    </div>
+  </div>
+
+  <div class="col">
+    <h2>UI 区域（应不翻页）</h2>
+    <div class="box ui readerTopBar" id="uiTop">顶部栏 .readerTopBar</div>
+    <div class="box ui readerBottomBar" id="uiBottom">底部栏 .readerBottomBar</div>
+    <div class="box ui readerControls" id="uiCtrl">控制栏 .readerControls</div>
+    <div class="box ui readerCatalog" id="uiCatalog">目录面板 .readerCatalog</div>
+    <div class="box ui reader_toolbar_container" id="uiToolbar">划线工具栏 .reader_toolbar_container</div>
+    <div class="box" id="outside">阅读区之外的普通元素（应不翻页）</div>
+  </div>
+
+  <div class="col">
+    <h2>翻页计数 &amp; 日志</h2>
+    <div class="box ok">已翻页次数：<b id="count">0</b></div>
+    <button id="reset" style="margin:8px 0;">重置计数</button>
+    <div id="log"></div>
+  </div>
+</div>
+
+<script>
+// ---- 模拟微信读书翻页按钮的真实行为 ----
+let flipCount = 0;
+const logEl = document.getElementById('log');
+function log(...a){ logEl.textContent += a.join(' ') + '\n'; logEl.scrollTop = logEl.scrollHeight; }
+
+document.getElementById('pagerRight').addEventListener('click', () => {
+  flipCount++;
+  document.getElementById('count').textContent = flipCount;
+  log('>>> 真实的「下一页」按钮被点击，计数 = ' + flipCount);
+});
+document.getElementById('reset').addEventListener('click', () => {
+  flipCount = 0; document.getElementById('count').textContent = 0;
+});
+// 供自动化测试调用：真正重置内部计数
+window.__resetFlip = () => { flipCount = 0; document.getElementById('count').textContent = 0; };
+document.getElementById('aLink').addEventListener('mousedown', (e) => {
+  if (e.button === 1) { e.preventDefault(); log('!!! 链接上的中键被误处理（应保留原生行为）'); }
+});
+</script>
+</body>
+</html>

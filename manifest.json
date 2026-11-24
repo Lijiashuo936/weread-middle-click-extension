@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "微信读书 · 中键翻页",
+  "version": "1.0.0",
+  "description": "在微信读书网页版，用鼠标中键单击翻到下一页。仅此而已。",
+  "host_permissions": [
+    "https://weread.qq.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://weread.qq.com/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ]
+}
